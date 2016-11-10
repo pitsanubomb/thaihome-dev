@@ -5,7 +5,7 @@ exports.getAdmins = function(req, res){
 		if(!err){
 			res.json({error:false,data:data});
 		}else{
-			res.json({erro:true,message:"ERROR ON SELECTING ADMINS"});
+			res.json({error:true,message:"ERROR ON SELECTING ADMINS"});
 		}
 	})
 };
