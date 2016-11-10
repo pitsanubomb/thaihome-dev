@@ -6,7 +6,7 @@ var todoSchema = new Schema({
   manager: String,
   dueDate: String,
   time: String,
-  taskText:Date,
+  taskText:String,
   propertyId: String,
   bookingId: String,
   done: Boolean,
