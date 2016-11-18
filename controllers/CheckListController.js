@@ -17,7 +17,7 @@ exports.getCheckListByProperty = function(req, res){
 
 exports.copyChecklistForProperty = function(req, res){
 	function stringGen(len) {
-	    var text = " ";
+	    var text = "";
 	    var charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 	    for(var i = 0; i < len; i++)
 	        text += charset.charAt(Math.floor(Math.random() * charset.length));
