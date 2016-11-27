@@ -1,0 +1,43 @@
+var mongoose = require('mongoose');
+var Schema = mongoose.Schema;
+var propertySchema = new Schema({
+    _id: String,
+    unitNumber: String,
+    beds: String,
+    unique:String,
+    minimDays: Number,
+    location: String,
+    name: String,
+    locationName: String, 
+    projectName: String,
+    propertyType: String,
+    unitType: String,
+    address1: String,
+    address2: String,
+    address3: String,
+    thaiAddress: String,
+    ownership:String,
+    electricUnit: Number,
+    waterUnit: Number,
+    guests: Number,
+    bedrooms: Number,
+    bathrooms: Number,
+    livingrooms: Number,
+    sqm: Number,
+    gmapslink: String,
+    gmapsdata: String,
+    saleprice: Number,
+    salecommission: Number,
+    active: Boolean,
+    images: [],
+    featured: String,
+    amenities: {},
+    dropbox:String,
+    dropboxPdf: String,
+    dropboxWeb: String,
+    dropboxHq: String,
+    conditionsAgent: String,
+    conditionsTenant: String
+});
+
+module.exports = mongoose.model('property', propertySchema, 'property');
