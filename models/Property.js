@@ -17,6 +17,8 @@ var propertySchema = new Schema({
     address3: String,
     thaiAddress: String,
     ownership:String,
+    cleanprice:Number,
+    cleanfinalprice:Number,
     electricUnit: Number,
     waterUnit: Number,
     guests: Number,
