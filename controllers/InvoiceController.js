@@ -1,4 +1,4 @@
-var Invoice = require('../models/Invoice');
+var Invoice = require('../models/invoice');
 
 exports.getInvoicesBayDateRange = function(req, res){
     Invoice.find({
