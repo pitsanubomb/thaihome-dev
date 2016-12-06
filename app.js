@@ -11,6 +11,7 @@ var users = require('./routes/users');
 var todos = require('./routes/todos');
 var checkList = require('./routes/checkList');
 var emailVariable = require('./routes/emailVariable');
+var invoice = require('./routes/invoice');
 
 var app = express();
 
@@ -45,6 +46,7 @@ app.use('/users', users);
 app.use('/todos', todos);
 app.use('/checkList', checkList);
 app.use('/emailVariable', emailVariable);
+app.use('/invoice', invoice);
 
 
 // catch 404 and forward to error handler
