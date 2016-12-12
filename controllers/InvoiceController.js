@@ -4,7 +4,7 @@ exports.getInvoicesBayDateRange = function(req, res){
     Invoice.find({
     $where: function () {
         var date = new Date(this.dueDate);
-        return (date >= new Date((Math.round(new Date() / 1000) - 604800 )  * 1000) && date <= new Date())
+        return (date >= new Date((Math.round(new Date() / 1000) - 604800 )  * 1000) && date <= new Date()) && this.paidDate == ''
     }
     }, function(err, invoices){
         if(!err){
