@@ -18,7 +18,7 @@ var CurrencyDataController = require('./controllers/CurrencyDataController');
 
 var app = express();
 
-cron.schedule('* */5 * * *', function(){
+cron.schedule('0 1 * * *', function(){
   CurrencyDataController.getRates();
 });
 
