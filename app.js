@@ -5,6 +5,7 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
+var cron = require('node-cron');
 
 var routes = require('./routes/index');
 var users = require('./routes/users');
@@ -12,8 +13,14 @@ var todos = require('./routes/todos');
 var checkList = require('./routes/checkList');
 var emailVariable = require('./routes/emailVariable');
 var invoice = require('./routes/invoice');
+var currency = require('./routes/currency');
+var CurrencyDataController = require('./controllers/CurrencyDataController');
 
 var app = express();
+
+cron.schedule('* */5 * * *', function(){
+  CurrencyDataController.getRates();
+});
 
 global.db = "mongodb://localhost:27017/thaihome";
 
@@ -47,6 +54,7 @@ app.use('/todos', todos);
 app.use('/checkList', checkList);
 app.use('/emailVariable', emailVariable);
 app.use('/invoice', invoice);
+app.use('/currency', currency);
 
 
 // catch 404 and forward to error handler

@@ -25,7 +25,7 @@ exports.getVariables = function(req, res){
                                             _.each(booking.priceExtra, function (extra) {
                                                 PriceExtra = parseFloat(PriceExtra) + parseFloat(extra.price);
                                                 PriceExtraHTML += '<tr>';
-                                                PriceExtraHTML += '<td style="padding: 5px 0 0 0;border-top: 1px solid #ddd;width: 90px;font-family: arial,sans-serif;font-size:14px;">' + extra.name + '</td><td style="padding: 5px 0 0 0;border-top: 1px solid #ddd;width: 90px;font-family: arial,sans-serif;text-align:right;"><b style="font-size:14px">{{CURRENCY}}'  + (extra.price * booking.rate).toFixed(0) + '</b></td>';
+                                                PriceExtraHTML += '<td style="padding: 5px 0 0 0;border-top: 1px solid #ddd;width: 90px;font-family: arial,sans-serif;font-size:14px;">' + extra.name + '</td><td style="padding: 5px 0 0 0;border-top: 1px solid #ddd;width: 90px;font-family: arial,sans-serif;text-align:right;"><b style="font-size:14px">{{CURRENCY}} '  + (extra.price * booking.rate).toFixed(0) + '</b></td>';
                                                 PriceExtraHTML += '</tr>';
                                             });
                                             var x = [];
@@ -46,9 +46,21 @@ exports.getVariables = function(req, res){
                                             }
                                             var PERIOD = x.join(', ');
                                             user = user[0];
+
+                                            var formatMoney = function(n, c, d, t){
+                                                var c = isNaN(c = Math.abs(c)) ? 2 : c, 
+                                                    d = d == undefined ? "." : d, 
+                                                    t = t == undefined ? "," : t, 
+                                                    s = n < 0 ? "-" : "", 
+                                                    i = String(parseInt(n = Math.abs(Number(n) || 0).toFixed(c))), 
+                                                    j = (j = i.length) > 3 ? j % 3 : 0;
+                                                    console.log(s + (j ? i.substr(0, j) + t : "") + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + t) + (c ? d + Math.abs(n - i).toFixed(c).slice(2) : ""), "FORMATTED NUMBER");
+                                                return s + (j ? i.substr(0, j) + t : "") + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + t) + (c ? d + Math.abs(n - i).toFixed(c).slice(2) : "");
+                                            };
+
                                             function GenerateVariables(func, condition, def){ //add value for defoult
                                                 var funcFromData = func;
-                                                //console.log('condition:',condition);
+                                                console.log('condition:',funcFromData);
                                                 if(condition != ''){
                                                     if(eval(condition)){
                                                         return eval(funcFromData);
