@@ -132,6 +132,7 @@ exports.getBookings = function () {
                                                             type: 'tenant',
                                                             created: Math.round(new Date() / 1000)
                                                         });
+                                                        console.log("CURRENT USER : : : ",  newUser);
                                                         newUser.save(function(err, user){
                                                             if(!err){
                                                                 var url = 'http://localhost:3000/api/booking'
@@ -193,7 +194,7 @@ exports.getBookings = function () {
                                                                 })
 
                                                             }else{
-                                                                console.log('ERROR ON SAVING NEW USER DATA!');
+                                                                console.log('ERROR ON SAVING NEW USER DATA! :',err);
                                                             }
                                                         })
                                                     } else {
