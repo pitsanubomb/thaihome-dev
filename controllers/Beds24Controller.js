@@ -116,7 +116,7 @@ exports.getBookings = function () {
                                                 if (!err) {
                                                     if (user == null) {
                                                         var newUserEmail = '';
-                                                        if(bookings[index].guestFirstEmail != '' ){
+                                                        if(bookings[index].guestFirstEmail != '' && typeof bookings[index].guestFirstEmail != 'undefined'){
                                                             newUserEmail = bookings[index].guestFirstEmail.trim();
                                                         }else{
                                                             newUserEmail = bookings[index].bookId + "bookid@notvalidemail.com";
