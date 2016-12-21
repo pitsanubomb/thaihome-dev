@@ -6,6 +6,8 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
 var cron = require('node-cron');
+var request = require('request');
+var Beds24 = require('./controllers/Beds24Controller');
 
 var routes = require('./routes/index');
 var users = require('./routes/users');
@@ -15,12 +17,19 @@ var emailVariable = require('./routes/emailVariable');
 var invoice = require('./routes/invoice');
 var currency = require('./routes/currency');
 var CurrencyDataController = require('./controllers/CurrencyDataController');
+var booking = require('./routes/booking')
 
 var app = express();
 
 cron.schedule('0 1 * * *', function(){
   CurrencyDataController.getRates();
 });
+
+cron.schedule('* * * * *', function(){
+  Beds24.getBookings();
+});
+
+
 
 global.db = "mongodb://localhost:27017/thaihome";
 
@@ -46,8 +55,6 @@ app.use(function(req, res, next) {
     return next();
 });
 
-
-
 app.use('/', routes);
 app.use('/users', users);
 app.use('/todos', todos);
@@ -55,7 +62,7 @@ app.use('/checkList', checkList);
 app.use('/emailVariable', emailVariable);
 app.use('/invoice', invoice);
 app.use('/currency', currency);
-
+app.use('/booking', booking);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
