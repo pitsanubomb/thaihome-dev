@@ -338,7 +338,6 @@ exports.setBooking = function (req, res) {
                 body: "{\r\n \"authentication\": {\r\n                        \"apiKey\": \"ThaiHomeTestingSync\",\r\n                        \"propKey\": \"" + propKey + "\"\r\n                    },\r\n    \"roomId\": \" " + roomId + " \",\r\n    \"unitId\": \" " + unitId + "\",\r\n    \"firstNight\": \" " + req.body.checkin + "\",\r\n    \"lastNight\": \" " + req.body.checkout + "\",\r\n    \"guestFirstName\": \" " + userName + " \",\r\n    \"guestName\": \" " + userSurname + "\",\r\n    \"guestEmail\": \" " + req.body.userEmail + "\",\r\n    \"guestPhone\": \" " + req.body.userPhone + " \",\r\n    \"guestCountry\": \" " + req.body.userCountry + "\",\r\n    \"price\": \" " + req.body.totalPrice + "\",\r\n    \"deposit\": \" " + req.body.deposit + "\",\r\n    \"notifyUrl\": \"true\",\r\n    \"notifyGuest\": \"false\",\r\n    \"notifyHost\": \"false\",\r\n    \"assignBooking\": \"false\"\r\n                }",
                 url: url
             };
-            console.log("STATUS : ", status);
             request(options, function (err, result, body) {
                 console.log(body);
                 var id = JSON.parse(body).bookId;
