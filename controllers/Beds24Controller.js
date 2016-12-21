@@ -121,7 +121,18 @@ exports.getBookings = function () {
                                                         }else{
                                                             newUserEmail = bookings[index].bookId + "bookid@notvalidemail.com";
                                                         }
+                                                        function makeid()
+                                                        {
+                                                            var text = "";
+                                                            var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+                                                            for( var i=0; i < 5; i++ )
+                                                                text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+                                                            return text;
+                                                        }
                                                         var newUser = new Users({
+                                                            _id:makeid(),
                                                             username:newUserEmail, 
                                                             email: newUserEmail,
                                                             password: '',
