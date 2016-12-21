@@ -114,7 +114,6 @@ exports.getBookings = function () {
                                             console.log('REAL PROPERTY ID : ', property._id);
                                             Users.findOne({ email: bookings[index].guestEmail.trim() }, function (err, user) {
                                                 if (!err) {
-                                                    console.log("USERID : ", user._id);
                                                     if (user == null) {
                                                         var newUserEmail = '';
                                                         if(bookings[index].guestFirstEmail != '' ){
