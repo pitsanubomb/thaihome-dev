@@ -26,8 +26,8 @@ cron.schedule('0 1 * * *', function(){
 });
 
 cron.schedule('* * * * *', function(){
-  Beds24.getProperty();
-  Beds24.getBookings();
+   Beds24.getProperty();
+   Beds24.getBookings();
 });
 
 
