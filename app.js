@@ -17,7 +17,8 @@ var emailVariable = require('./routes/emailVariable');
 var invoice = require('./routes/invoice');
 var currency = require('./routes/currency');
 var CurrencyDataController = require('./controllers/CurrencyDataController');
-var booking = require('./routes/booking')
+var booking = require('./routes/booking');
+var omise = require('./omise/omise');
 
 var app = express();
 
@@ -64,6 +65,7 @@ app.use('/emailVariable', emailVariable);
 app.use('/invoice', invoice);
 app.use('/currency', currency);
 app.use('/booking', booking);
+app.use('/omise', omise);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
