@@ -18,7 +18,7 @@ var invoice = require('./routes/invoice');
 var currency = require('./routes/currency');
 var CurrencyDataController = require('./controllers/CurrencyDataController');
 var booking = require('./routes/booking');
-var omise = require('./omise/omise');
+var omise = require('./routes/omise');
 
 var app = express();
 
