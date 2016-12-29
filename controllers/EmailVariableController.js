@@ -5,7 +5,7 @@ var Property = require('../models/Property');
 var Currency = require('../models/Currency')
 var moment = require('moment');
 var Recipt = require('../models/Receipt');
-var Invoice = require('../models/Invoice');
+var Invoice = require('../models/invoice');
 require("moment-duration-format");
 var _ = require('lodash');
 
