@@ -11,4 +11,8 @@ router.get('/getAdmins', function(req, res){
 	UsersController.getAdmins(req, res);
 });
 
+router.post('/getUsersByMultipleIds', function(req, res){
+	UsersController.getUsersByMultipleIds(req, res);
+});
+
 module.exports = router;

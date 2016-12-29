@@ -9,3 +9,14 @@ exports.getAdmins = function(req, res){
 		}
 	})
 };
+
+exports.getUsersByMultipleIds = function(req, res){
+	Users.find({
+    '_id': { $in: req.body.ids},function(err, users){
+		if(!err){
+			res.json({error:false, data:users});
+		}else{
+			res.json({error:true, message:"ERROR ON SELECTING USERS BY ID"});
+		}
+	}})
+};

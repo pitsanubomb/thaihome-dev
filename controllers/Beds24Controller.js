@@ -138,7 +138,7 @@ exports.getBookings = function () {
                                                             password: '',
                                                             name: bookings[index].guestFirstName.trim() + " " + bookings[index].guestName.trim(),
                                                             agent:'',
-                                                            phone: bookings[index].guestPhone.trim(),
+                                                            phone: bookings[index].guestMobile.trim(),
                                                             country: bookings[index].guestCountry.trim(),
                                                             type: 'tenant',
                                                             created: Math.round(new Date() / 1000)
@@ -325,6 +325,7 @@ exports.setBookingWithId = function (id, th_id, resData) {
 exports.setBooking = function (req, res) {
     Beds24Props.findOne({ rooms: req.body.prop }, function (err, result) {
         if (!err) {
+            console.log("RESULT FOR PROPES : ", result);
             var roomUnique = req.body.prop;
             var propKey = result.key;
             var user = req.body.user.split(' ');
@@ -335,7 +336,7 @@ exports.setBooking = function (req, res) {
             var url = 'https://beds24.com/api/json/setBooking';
             var options = {
                 method: 'post',
-                body: "{\r\n \"authentication\": {\r\n                        \"apiKey\": \"ThaiHomeTestingSync\",\r\n                        \"propKey\": \"" + propKey + "\"\r\n                    },\r\n    \"roomId\": \" " + roomId + " \",\r\n    \"unitId\": \" " + unitId + "\",\r\n    \"firstNight\": \" " + req.body.checkin + "\",\r\n    \"lastNight\": \" " + req.body.checkout + "\",\r\n    \"guestFirstName\": \" " + userName + " \",\r\n    \"guestName\": \" " + userSurname + "\",\r\n    \"guestEmail\": \" " + req.body.userEmail + "\",\r\n    \"guestPhone\": \" " + req.body.userPhone + " \",\r\n    \"guestCountry\": \" " + req.body.userCountry + "\",\r\n    \"price\": \" " + req.body.totalPrice + "\",\r\n    \"deposit\": \" " + req.body.deposit + "\",\r\n    \"notifyUrl\": \"true\",\r\n    \"notifyGuest\": \"false\",\r\n    \"notifyHost\": \"false\",\r\n    \"assignBooking\": \"false\"\r\n                }",
+                body: "{\r\n \"authentication\": {\r\n                        \"apiKey\": \"ThaiHomeTestingSync\",\r\n                        \"propKey\": \"" + propKey + "\"\r\n                    },\r\n    \"roomId\": \" " + roomId + " \",\r\n    \"unitId\": \" " + unitId + "\",\r\n    \"firstNight\": \" " + req.body.checkin + "\",\r\n    \"lastNight\": \" " + req.body.checkout + "\",\r\n    \"status\": \"2\",\r\n    \"guestFirstName\": \" " + userName + " \",\r\n    \"guestName\": \" " + userSurname + "\",\r\n    \"guestEmail\": \" " + req.body.userEmail + "\",\r\n    \"guestMobile\": \" " + req.body.userPhone + " \",\r\n    \"guestCountry2\": \" " + req.body.userCountry + "\",\r\n    \"price\": \" " + req.body.totalPrice + "\",\r\n    \"deposit\": \" " + req.body.deposit + "\",\r\n    \"notifyUrl\": \"true\",\r\n    \"notifyGuest\": \"false\",\r\n    \"notifyHost\": \"false\",\r\n    \"assignBooking\": \"false\"\r\n                }",
                 url: url
             };
             request(options, function (err, result, body) {
@@ -379,19 +380,33 @@ exports.updateBooking = function (req, res) {
             var userSurname = user[1];
             var userName = user[0];
             var roomId = result.roomId;
-            var status = 1;
-            if(req.body.status == 6 || req.body.status == '6'){
-                status =  0;
-            }
+            
             var unitId = result.rooms.indexOf(roomUnique) + 1;
             var url = 'https://beds24.com/api/json/setBooking';
             var th_id = req.body.th_id;
             Beds24.findOne({ th_id: th_id }, function (err, data) {
+                var status = '';
+                if(req.body.status == 6 || req.body.status == '6'){
+                    status =  0;
+                }
+                else if(req.body.status == 0 || req.body.status == '0'){
+                    status =  2;
+                }
+                else if(req.body.status == 1 || req.body.status == '1'){
+                    status =  2;
+                }
+                else if(req.body.status == 2 || req.body.status == '2'){
+                    status =  1;
+                }else if(req.body.status == 3 || req.body.status == '3'){
+                    status =  1;
+                }else{
+                    status = data.status;
+                }
                 var id = data.data.bookId;
                 var url = 'https://beds24.com/api/json/setBooking'
                 var options = {
                     method: 'post',
-                    body: "{\r\n \"authentication\": {\r\n                        \"apiKey\": \"ThaiHomeTestingSync\",\r\n                        \"propKey\": \"" + propKey + "\"\r\n                    },\r\n    \"bookId\": \" " + id + "\",\r\n    \"roomId\": \" " + roomId + " \",\r\n    \"unitId\": \" " + unitId + "\",\r\n    \"firstNight\": \" " + req.body.checkin + "\",\r\n    \"status\": \"" + status + "\",\r\n    \"lastNight\": \" " + req.body.checkout + "\",\r\n    \"guestFirstName\": \" " + userName + " \",\r\n    \"guestName\": \" " + userSurname + "\",\r\n    \"guestEmail\": \" " + req.body.userEmail + "\",\r\n    \"guestPhone\": \" " + req.body.userPhone + " \",\r\n    \"guestCountry\": \" " + req.body.userCountry + "\",\r\n    \"price\": \" " + req.body.totalPrice + "\",\r\n    \"deposit\": \" " + req.body.deposit + "\",\r\n    \"notifyUrl\": \"true\",\r\n    \"notifyGuest\": \"false\",\r\n    \"notifyHost\": \"false\",\r\n    \"assignBooking\": \"false\"\r\n                }",
+                    body: "{\r\n \"authentication\": {\r\n                        \"apiKey\": \"ThaiHomeTestingSync\",\r\n                        \"propKey\": \"" + propKey + "\"\r\n                    },\r\n    \"bookId\": \"" + id + "\",\r\n    \"roomId\": \"" + roomId + "\",\r\n    \"unitId\": \" " + unitId + "\",\r\n    \"firstNight\": \" " + req.body.checkin + "\",\r\n    \"status\": \"" + status + "\",\r\n    \"lastNight\": \" " + req.body.checkout + "\",\r\n    \"guestFirstName\": \" " + userName + " \",\r\n    \"guestName\": \"" + userSurname + "\",\r\n    \"guestEmail\": \"" + req.body.userEmail + "\",\r\n    \"guestMobile\": \"" + req.body.userPhone + "\",\r\n    \"guestCountry2\": \"" + req.body.userCountry + "\",\r\n    \"price\": \"" + req.body.totalPrice + "\",\r\n    \"deposit\": \"" + req.body.deposit + "\",\r\n    \"notifyUrl\": \"true\",\r\n    \"notifyGuest\": \"false\",\r\n    \"notifyHost\": \"false\",\r\n    \"assignBooking\": \"false\"\r\n                }",
                     url: url
                 };
                 console.log("STATUS : ", status);
