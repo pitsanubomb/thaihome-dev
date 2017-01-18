@@ -4,7 +4,9 @@ var request = require('request');
 var moment = require('moment');
 var Property = require('../models/Property');
 var Users = require('../models/Users');
-
+var Price = require('../models/Price');
+var fs = require('fs');
+var lngFile = JSON.parse(fs.readFileSync('./languageToCountry.json', 'utf8'));
 
 exports.getProperty = function () {
     var PropKeys = ['ThaiHomeTestingWAT'];
@@ -17,23 +19,20 @@ exports.getProperty = function () {
         }
         request(options, function (err, res, body) {
             if (err) {
-                inspect(err, 'error posting json')
+                console.log("error on getting properties");
                 return
             }
-            Beds24Props.find({ key: 'ThaiHomeTestingWAT' }, function (err, data) {
+            Beds24Props.find({key: 'ThaiHomeTestingWAT'}, function (err, data) {
                 if (data.length != 0) {
                     var current = data[0];
                     current.rooms = JSON.parse(body).getProperty[0].roomTypes[0].unitNames.split("\r\n");
                     current.save(function (err, data) {
                         if (!err) {
-                            console.log("DATA SAVED AS : ", data);
                         } else {
                             console.log("ERROR ON SAVING new PROP DATA : ", err);
                         }
                     });
                 } else {
-                    console.log("DATA FROM BEDS24Props: ", data);
-                    console.log("BEDS21 result :", JSON.parse(body).getProperty[0].roomTypes[0].unitNames.split("\r\n"));
                     var newPropData = new Beds24Props({
                         roomId: JSON.parse(body).getProperty[0].roomTypes[0].roomId,
                         key: "ThaiHomeTestingWAT",
@@ -41,7 +40,6 @@ exports.getProperty = function () {
                     });
                     newPropData.save(function (err, data) {
                         if (!err) {
-                            console.log("DATA SAVED AS : ", data);
                         } else {
                             console.log("ERROR ON SAVING new PROP DATA : ", err);
                         }
@@ -58,18 +56,25 @@ exports.getBookings = function () {
         method: 'post',
         body: "{\r\n                    \"authentication\": {\r\n                        \"apiKey\": \"ThaiHomeTestingSync\",\r\n                        \"propKey\": \"ThaiHomeTestingWAT\"\r\n                    },\r\n                    \"includeInvoice\": false,\r\n                                        \"includeInfoItems\": false\r\n                }",
         url: url
-    }
+    };
+
+    function getCountryByCode(code) {
+        console.log("CURRENT COUNTRY NAME : ", lngFile[0]);
+        var currentC = lngFile.filter(function (obj) {
+            return obj.code == code;
+        })[0];
+        return currentC.country;
+    };
     request(options, function (err, res, body) {
         if (err) {
             console.log("ERROR ON GETTING BOOKINGS DATA FROM BEDS25!!");
         }
-        //console.log("BEDS21 result :", JSON.parse(body));
         var bookings = JSON.parse(body);
         if (bookings.length) {
+
             Beds24.find(function (err, data) {
                 if (!err) {
                     function compareBooking(index) {
-                        console.log("CURRENT BOOKING : " + index + " ", bookings[index]);
                         var current = data.filter(function (obj) {
                             return obj.data.bookId == bookings[index].bookId;
                         });
@@ -94,187 +99,222 @@ exports.getBookings = function () {
                                 current[0].data = bookings[index];
                                 current[0].save(function () {
                                     if (!err) {
-                                        console.log('saved');
                                         if ((index + 1) < bookings.length) {
                                             index++;
                                             compareBooking(index);
                                         }
                                     } else {
-                                        console.log("ERROR ON SAVING DATA FOR CURRENT0");
                                     }
                                 })
-                                console.log("IS NOT EQUAL!!! :", current[0].data.roomId, + ' ' + bookings[index].bookId);
+                                console.log("IS NOT EQUAL!!! :", current[0].data.roomId, +' ' + bookings[index].bookId);
                             }
                         } else {
-                            Beds24Props.findOne({ roomId: bookings[index].roomId }, function (err, propData) {
+                            Beds24Props.findOne({roomId: bookings[index].roomId}, function (err, propData) {
                                 if (!err) {
-                                    console.log("PROPDATA: unit ", propData.rooms[bookings[index].unitId]);
-                                    Property.findOne({ unique: propData.rooms[bookings[index].unitId] }, function (err, property) {
-                                        if (!err) {
-                                            console.log('REAL PROPERTY ID : ', property._id);
-                                            Users.findOne({ email: bookings[index].guestEmail.trim() }, function (err, user) {
-                                                if (!err) {
-                                                    if (user == null) {
-                                                        var newUserEmail = '';
-                                                        if(bookings[index].guestFirstEmail != '' && typeof bookings[index].guestFirstEmail != 'undefined'){
-                                                            newUserEmail = bookings[index].guestFirstEmail.trim();
-                                                        }else{
-                                                            newUserEmail = bookings[index].bookId + "bookid@notvalidemail.com";
-                                                        }
-                                                        function makeid()
-                                                        {
-                                                            var text = "";
-                                                            var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-
-                                                            for( var i=0; i < 5; i++ )
-                                                                text += possible.charAt(Math.floor(Math.random() * possible.length));
-
-                                                            return text;
-                                                        }
-                                                        var newUser = new Users({
-                                                            _id:makeid(),
-                                                            username:newUserEmail, 
-                                                            email: newUserEmail,
-                                                            password: '',
-                                                            name: bookings[index].guestFirstName.trim() + " " + bookings[index].guestName.trim(),
-                                                            agent:'',
-                                                            phone: bookings[index].guestMobile.trim(),
-                                                            country: bookings[index].guestCountry.trim(),
-                                                            type: 'tenant',
-                                                            created: Math.round(new Date() / 1000)
-                                                        });
-                                                        console.log("CURRENT USER : : : ",  newUser);
-                                                        newUser.save(function(err, user){
-                                                            if(!err){
-                                                                var url = 'http://localhost:3000/api/booking'
-                                                                var options = {
-                                                                    method: 'post',
-                                                                    body: {
-                                                                        "property": property._id,
-                                                                        "user": user._id,
-                                                                        "agentCommission": "",
-                                                                        "discountPercentage": 0,
-                                                                        "checkin": Math.round(new Date(bookings[index].firstNight) / 1000),
-                                                                        "checkout": Math.round(new Date(bookings[index].firstNight) / 1000),
-                                                                        "status": 0,
-                                                                        "currency": "124486735576e9ff",
-                                                                        "paymentType": 5,
-                                                                        "expires": Math.round(new Date() / 1000 + 5 * 86400),
-                                                                        "priceDay": 2300,//
-                                                                        "nights": 6,//
-                                                                        "priceReservation": 0,
-                                                                        "priceSecurity": 2000,//
-                                                                        "cleanprice": 400,//
-                                                                        "cleanfinalprice": 750,//
-                                                                        "priceExtra": [],
-                                                                        "conditionsTenant": "Electric and Water, you have to pay for what you use. Wifi and Cable TV included and paid by us. ",
-                                                                        "created": Math.round(new Date() / 1000),
-                                                                        "rate": 1,
-                                                                        "pricePaid": 0,
-                                                                        "emails": [],
-                                                                        "rentpayday": 0,
-                                                                        "nextpayment": 0,
-                                                                        "source": "B",
-                                                                        "discountAmount": "",
-                                                                        "longTermDay": 1,
-                                                                        "longTermAmount": null,
-                                                                        "checked": false,
-                                                                        "paymentconfirmed": false,
-                                                                    },
-                                                                    url: url
-                                                                };
-                                                                options.body = JSON.stringify(options.body);
-                                                                request(options, function (err, response, body) {
-                                                                    console.log("RESPONSE BOFY FROM API OF THAHIJOME: ", body);
-                                                                    var currentBooking = JSON.parse(body);
-                                                                    console.log("current booking id :", currentBooking.id);
-                                                                    var newBooking = new Beds24({
-                                                                        data: bookings[index],
-                                                                        th_id: currentBooking.id
-                                                                    });
-                                                                    newBooking.save(function (err, data) {
-                                                                        if (!err) {
-                                                                            console.log("saved a new booking with bookingId:", bookings[index].bookId);
-                                                                            if ((index + 1) < bookings.length) {
-                                                                                index++;
-                                                                                compareBooking(index);
-                                                                            }
-                                                                        }
-                                                                    });
-
-                                                                })
-
-                                                            }else{
-                                                                console.log('ERROR ON SAVING NEW USER DATA! :',err);
-                                                            }
-                                                        })
-                                                    } else {
-                                                        var url = 'http://localhost:3000/api/booking'
-                                                        var options = {
-                                                            method: 'post',
-                                                            body: {
-                                                                "property": property._id,
-                                                                "user": user._id,
-                                                                "agentCommission": "",
-                                                                "discountPercentage": 0,
-                                                                "checkin": Math.round(new Date(bookings[index].firstNight) / 1000),
-                                                                "checkout": Math.round(new Date(bookings[index].firstNight) / 1000),
-                                                                "status": 0,
-                                                                "currency": "124486735576e9ff",
-                                                                "paymentType": 5,
-                                                                "expires": Math.round(new Date() / 1000 + 5 * 86400),
-                                                                "priceDay": 2300,//
-                                                                "nights": 6,//
-                                                                "priceReservation": 0,
-                                                                "priceSecurity": 2000,//
-                                                                "cleanprice": 400,//
-                                                                "cleanfinalprice": 750,//
-                                                                "priceExtra": [],
-                                                                "conditionsTenant": "Electric and Water, you have to pay for what you use. Wifi and Cable TV included and paid by us. ",
-                                                                "created": Math.round(new Date() / 1000),
-                                                                "rate": 1,
-                                                                "pricePaid": 0,
-                                                                "emails": [],
-                                                                "rentpayday": 0,
-                                                                "nextpayment": 0,
-                                                                "source": "B",
-                                                                "discountAmount": "",
-                                                                "longTermDay": 1,
-                                                                "longTermAmount": null,
-                                                                "checked": false,
-                                                                "paymentconfirmed": false,
-                                                            },
-                                                            url: url
-                                                        };
-                                                        options.body = JSON.stringify(options.body);
-                                                        request(options, function (err, response, body) {
-                                                            console.log("RESPONSE BOFY FROM API OF THAHIJOME: ", body);
-                                                            var currentBooking = JSON.parse(body);
-                                                            console.log("current booking id :", currentBooking.id);
-                                                             var newBooking = new Beds24({
-                                                                data: bookings[index],
-                                                                th_id: currentBooking.id
-                                                            });
-                                                            newBooking.save(function (err, data) {
-                                                                if (!err) {
-                                                                    console.log("saved a new booking with bookingId:", bookings[index]);
-                                                                    if ((index + 1) < bookings.length) {
-                                                                        index++;
-                                                                        compareBooking(index);
-                                                                    }
-                                                                }
-                                                            });
-
-                                                        })
-                                                    }
+                                    Property.findOne({unique: propData.rooms[bookings[index].unitId - 1]}, function (err, property) {
+                                        Price.findOne({property: property._id}, function (err, propPrice) {
+                                            if (!err) {
+                                                var checkin = Math.round(new Date(bookings[index].firstNight) / 1000);
+                                                var checkout = Math.round(new Date(bookings[index].lastNight) / 1000 + 86400);
+                                                var days = Math.round((checkout - checkin) / 86400);
+                                                var deposit = 0;
+                                                var price = 0;
+                                                var reservation = 0;
+                                                if (days < 7) {
+                                                    reservation = propPrice.PricereservationDay;
+                                                    price = propPrice.priceDay;
+                                                    deposit = propPrice.depositDay;
+                                                } else if (days < 30) {
+                                                    reservation = propPrice.PricereservationWeek;
+                                                    price = propPrice.priceWeek;
+                                                    deposit = propPrice.depositWeek;
+                                                } else if (days < 365) {
+                                                    reservation = propPrice.PricereservationMonth;
+                                                    price = propPrice.priceMonth;
+                                                    deposit = propPrice.depositMonth;
                                                 } else {
-                                                    console.log('ERROR ON SELECTING USER WITH EMAIL.');
+                                                    reservation = propPrice.PricereservationYear;
+                                                    price = propPrice.priceYear;
+                                                    deposit = propPrice.depositYear;
                                                 }
-                                            });
-                                        } else {
-                                            console.log('ERROR ON SELECTING PROPERTY WITH UNIQUE VALUE!!');
-                                        }
-                                    })
+                                                var status = 0;
+                                                if (bookings[index].status == 0 || bookings[index].status == '0') {
+                                                    status = 6;
+                                                }
+                                                else if (bookings[index].status == 2 || bookings[index].status == '2') {
+                                                    status = 0;
+                                                }
+                                                else if (bookings[index].status == 1 || bookings[index].status == '1') {
+                                                    status = 2;
+                                                }
+                                                else if (bookings[index].status == 3 || bookings[index].status == '3') {
+                                                    status = 1;
+                                                }
+                                                Users.findOne({email: bookings[index].guestEmail.trim()}, function (err, user) {
+                                                    if (!err) {
+                                                        if (user == null) {
+                                                            var newUserEmail = '';
+                                                            if (bookings[index].guestEmail != '' && typeof bookings[index].guestEmail != 'undefined') {
+                                                                newUserEmail = bookings[index].guestEmail.trim();
+                                                            } else {
+                                                                newUserEmail = bookings[index].bookId + "bookid@notvalidemail.com";
+                                                            }
+                                                            function makeid() {
+                                                                var text = "";
+                                                                var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+                                                                for (var i = 0; i < 5; i++)
+                                                                    text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+                                                                return text;
+                                                            }
+
+                                                            var newUser = new Users({
+                                                                _id: makeid(),
+                                                                username: newUserEmail,
+                                                                email: newUserEmail,
+                                                                password: '',
+                                                                name: bookings[index].guestFirstName.trim() + " " + bookings[index].guestName.trim(),
+                                                                agent: '',
+                                                                phone: bookings[index].guestMobile.trim(),
+                                                                country: getCountryByCode(bookings[index].guestCountry2.trim()),
+                                                                type: 'tenant',
+                                                                created: Math.round(new Date() / 1000)
+                                                            });
+                                                            newUser.save(function (err, user) {
+                                                                if (!err) {
+                                                                    var url = 'http://localhost:3000/api/booking';
+
+                                                                    var options = {
+                                                                        method: 'post',
+                                                                        body: {
+                                                                            "property": property._id,
+                                                                            "user": user._id,
+                                                                            "agentCommission": "",
+                                                                            "discountPercentage": 0,
+                                                                            "checkin": checkin,
+                                                                            "checkout": checkout,
+                                                                            "status": status,//
+                                                                            "currency": "124486735576e9ff",
+                                                                            "paymentType": 5,
+                                                                            "expires": Math.round(new Date() / 1000 + 5 * 86400),
+                                                                            "priceDay": price,
+                                                                            "nights": days,
+                                                                            "priceReservation": reservation,
+                                                                            "priceSecurity": deposit,
+                                                                            "cleanprice": property.cleanprice,
+                                                                            "cleanfinalprice": property.cleanfinalprice,
+                                                                            "priceExtra": [],
+                                                                            "conditionsTenant": "Electric and Water, you have to pay for what you use. Wifi and Cable TV included and paid by us. ",
+                                                                            "created": Math.round(new Date() / 1000),
+                                                                            "rate": 1,
+                                                                            "pricePaid": 0,
+                                                                            "emails": [],
+                                                                            "rentpayday": 0,
+                                                                            "nextpayment": 0,
+                                                                            "source": "B",
+                                                                            "discountAmount": "",
+                                                                            "longTermDay": 1,
+                                                                            "longTermAmount": null,
+                                                                            "checked": false,
+                                                                            "paymentconfirmed": false,
+                                                                        },
+                                                                        url: url
+                                                                    };
+                                                                    options.body = JSON.stringify(options.body);
+                                                                    request(options, function (err, response, body) {
+                                                                        console.log("RESPONSE BOFY FROM API OF THAHIJOME: ", body);
+                                                                        var currentBooking = JSON.parse(body);
+                                                                        console.log("current booking id :", currentBooking.id);
+                                                                        var newBooking = new Beds24({
+                                                                            data: bookings[index],
+                                                                            th_id: currentBooking.id
+                                                                        });
+                                                                        newBooking.save(function (err, data) {
+                                                                            if (!err) {
+                                                                                console.log("saved a new booking with bookingId:", bookings[index].bookId);
+                                                                                if ((index + 1) < bookings.length) {
+                                                                                    index++;
+                                                                                    compareBooking(index);
+                                                                                }
+                                                                            }
+                                                                        });
+
+                                                                    })
+
+                                                                } else {
+                                                                    console.log('ERROR ON SAVING NEW USER DATA! :', err);
+                                                                }
+                                                            })
+                                                        } else {
+                                                            console.log("CURRENT BOOKING : ", bookings[index]);
+                                                            var url = 'http://localhost:3000/api/booking';
+                                                            var options = {
+                                                                method: 'post',
+                                                                body: {
+                                                                    "property": property._id,
+                                                                    "user": user._id,
+                                                                    "agentCommission": "",
+                                                                    "discountPercentage": 0,
+                                                                    "checkin": checkin,
+                                                                    "checkout": checkout,
+                                                                    "status": status,//
+                                                                    "currency": "124486735576e9ff",
+                                                                    "paymentType": 5,
+                                                                    "expires": Math.round(new Date() / 1000 + 5 * 86400),
+                                                                    "priceDay": price,
+                                                                    "nights": days,
+                                                                    "priceReservation": reservation,
+                                                                    "priceSecurity": deposit,
+                                                                    "cleanprice": property.cleanprice,
+                                                                    "cleanfinalprice": property.cleanfinalprice,
+                                                                    "priceExtra": [],
+                                                                    "conditionsTenant": "Electric and Water, you have to pay for what you use. Wifi and Cable TV included and paid by us. ",
+                                                                    "created": Math.round(new Date() / 1000),
+                                                                    "rate": 1,
+                                                                    "pricePaid": 0,
+                                                                    "emails": [],
+                                                                    "rentpayday": 0,
+                                                                    "nextpayment": 0,
+                                                                    "source": "B",
+                                                                    "discountAmount": "",
+                                                                    "longTermDay": 1,
+                                                                    "longTermAmount": null,
+                                                                    "checked": false,
+                                                                    "paymentconfirmed": false,
+                                                                },
+                                                                url: url
+                                                            };
+                                                            options.body = JSON.stringify(options.body);
+                                                            request(options, function (err, response, body) {
+                                                                var currentBooking = JSON.parse(body);
+                                                                var newBooking = new Beds24({
+                                                                    data: bookings[index],
+                                                                    th_id: currentBooking.id
+                                                                });
+                                                                newBooking.save(function (err, data) {
+                                                                    if (!err) {
+                                                                        console.log("saved a new booking with bookingId:", bookings[index]);
+                                                                        if ((index + 1) < bookings.length) {
+                                                                            index++;
+                                                                            compareBooking(index);
+                                                                        }
+                                                                    }
+                                                                });
+
+                                                            })
+                                                        }
+                                                    } else {
+                                                        console.log('ERROR ON SELECTING USER WITH EMAIL.');
+                                                    }
+                                                });
+                                            } else {
+                                                console.log('ERROR ON SELECTING PROPERTY WITH UNIQUE VALUE!!');
+                                            }
+                                        });
+
+
+                                    });
 
                                 } else {
                                     console.log("ERROR ON SELECTING PROP BY ROOMID.");
@@ -282,6 +322,7 @@ exports.getBookings = function () {
                             });
                         }
                     }
+
                     compareBooking(0);
                 } else {
                     console.log('ERROR ON GETTING beds24DATA');
@@ -312,9 +353,9 @@ exports.setBookingWithId = function (id, th_id, resData) {
             });
             newBooking.save(function (err, date) {
                 if (!err) {
-                    res.json({ error: false });
+                    res.json({error: false});
                 } else {
-                    res.json({ error: true })
+                    res.json({error: true})
                 }
             });
         }
@@ -323,9 +364,26 @@ exports.setBookingWithId = function (id, th_id, resData) {
 }
 
 exports.setBooking = function (req, res) {
-    Beds24Props.findOne({ rooms: req.body.prop }, function (err, result) {
-        if (!err) {
+    Beds24Props.findOne({rooms: req.body.prop}, function (err, result) {
+        if (!err && result != null) {
             console.log("RESULT FOR PROPES : ", result);
+            var status = '';
+            if (req.body.status == 6 || req.body.status == '6') {
+                status = 0;
+            }
+            else if (req.body.status == 0 || req.body.status == '0') {
+                status = 2;
+            }
+            else if (req.body.status == 1 || req.body.status == '1') {
+                status = 2;
+            }
+            else if (req.body.status == 2 || req.body.status == '2') {
+                status = 1;
+            } else if (req.body.status == 3 || req.body.status == '3') {
+                status = 1;
+            } else {
+                status = 3;
+            }
             var roomUnique = req.body.prop;
             var propKey = result.key;
             var user = req.body.user.split(' ');
@@ -336,14 +394,14 @@ exports.setBooking = function (req, res) {
             var url = 'https://beds24.com/api/json/setBooking';
             var options = {
                 method: 'post',
-                body: "{\r\n \"authentication\": {\r\n                        \"apiKey\": \"ThaiHomeTestingSync\",\r\n                        \"propKey\": \"" + propKey + "\"\r\n                    },\r\n    \"roomId\": \" " + roomId + " \",\r\n    \"unitId\": \" " + unitId + "\",\r\n    \"firstNight\": \" " + req.body.checkin + "\",\r\n    \"lastNight\": \" " + req.body.checkout + "\",\r\n    \"status\": \"2\",\r\n    \"guestFirstName\": \" " + userName + " \",\r\n    \"guestName\": \" " + userSurname + "\",\r\n    \"guestEmail\": \" " + req.body.userEmail + "\",\r\n    \"guestMobile\": \" " + req.body.userPhone + " \",\r\n    \"guestCountry2\": \" " + req.body.userCountry + "\",\r\n    \"price\": \" " + req.body.totalPrice + "\",\r\n    \"deposit\": \" " + req.body.deposit + "\",\r\n    \"notifyUrl\": \"true\",\r\n    \"notifyGuest\": \"false\",\r\n    \"notifyHost\": \"false\",\r\n    \"assignBooking\": \"false\"\r\n                }",
+                body: "{\r\n \"authentication\": {\r\n                        \"apiKey\": \"ThaiHomeTestingSync\",\r\n                        \"propKey\": \"" + propKey + "\"\r\n                    },\r\n    \"roomId\": \" " + roomId + " \",\r\n    \"unitId\": \" " + unitId + "\",\r\n    \"firstNight\": \" " + req.body.checkin + "\",\r\n    \"lastNight\": \" " + req.body.checkout + "\",\r\n    \"status\": \"" + status + "\",\r\n    \"guestFirstName\": \" " + userName + " \",\r\n    \"guestName\": \" " + userSurname + "\",\r\n    \"guestEmail\": \" " + req.body.userEmail + "\",\r\n    \"guestMobile\": \" " + req.body.userPhone + " \",\r\n    \"guestCountry2\": \" " + req.body.userCountry + "\",\r\n    \"price\": \" " + req.body.totalPrice + "\",\r\n    \"deposit\": \" " + req.body.deposit + "\",\r\n    \"notifyUrl\": \"true\",\r\n    \"notifyGuest\": \"false\",\r\n    \"notifyHost\": \"false\",\r\n    \"assignBooking\": \"false\"\r\n                }",
                 url: url
             };
             request(options, function (err, result, body) {
                 console.log(body);
                 var id = JSON.parse(body).bookId;
                 var th_id = req.body.th_id;
-                var url = 'https://beds24.com/api/json/getBookings'
+                var url = 'https://beds24.com/api/json/getBookings';
                 var options = {
                     method: 'post',
                     body: "{\r\n                    \"authentication\": {\r\n                        \"apiKey\": \"ThaiHomeTestingSync\",\r\n                        \"propKey\": \"ThaiHomeTestingWAT\"\r\n                    },\r\n                    \"bookId\": \" " + id + " \"\r\n                   \r\n                }",
@@ -357,50 +415,50 @@ exports.setBooking = function (req, res) {
                     });
                     newBooking.save(function (err, data) {
                         if (!err) {
-                            res.json({ error: false });
+                            res.json({error: false});
                         } else {
-                            res.json({ error: true })
+                            res.json({error: true})
                         }
                     });
                 });
             });
         } else {
-            res.json({ error: true, message: "ERROR ON SELECTING PROPERTY!." })
+            res.json({error: true, message: "ERROR ON SELECTING PROPERTY!."})
         }
     });
 
 }
 
 exports.updateBooking = function (req, res) {
-    Beds24Props.findOne({ rooms: req.body.prop }, function (err, result) {
-        if (!err) {
+    Beds24Props.findOne({rooms: req.body.prop}, function (err, result) {
+        if (!err && result != null) {
             var roomUnique = req.body.prop;
             var propKey = result.key;
             var user = req.body.user.split(' ');
             var userSurname = user[1];
             var userName = user[0];
             var roomId = result.roomId;
-            
+
             var unitId = result.rooms.indexOf(roomUnique) + 1;
             var url = 'https://beds24.com/api/json/setBooking';
             var th_id = req.body.th_id;
-            Beds24.findOne({ th_id: th_id }, function (err, data) {
+            Beds24.findOne({th_id: th_id}, function (err, data) {
                 var status = '';
-                if(req.body.status == 6 || req.body.status == '6'){
-                    status =  0;
+                if (req.body.status == 6 || req.body.status == '6') {
+                    status = 0;
                 }
-                else if(req.body.status == 0 || req.body.status == '0'){
-                    status =  2;
+                else if (req.body.status == 0 || req.body.status == '0') {
+                    status = 2;
                 }
-                else if(req.body.status == 1 || req.body.status == '1'){
-                    status =  2;
+                else if (req.body.status == 1 || req.body.status == '1') {
+                    status = 2;
                 }
-                else if(req.body.status == 2 || req.body.status == '2'){
-                    status =  1;
-                }else if(req.body.status == 3 || req.body.status == '3'){
-                    status =  1;
-                }else{
-                    status = data.status;
+                else if (req.body.status == 2 || req.body.status == '2') {
+                    status = 1;
+                } else if (req.body.status == 3 || req.body.status == '3') {
+                    status = 1;
+                } else {
+                    status = 3;
                 }
                 var id = data.data.bookId;
                 var url = 'https://beds24.com/api/json/setBooking'
@@ -409,7 +467,6 @@ exports.updateBooking = function (req, res) {
                     body: "{\r\n \"authentication\": {\r\n                        \"apiKey\": \"ThaiHomeTestingSync\",\r\n                        \"propKey\": \"" + propKey + "\"\r\n                    },\r\n    \"bookId\": \"" + id + "\",\r\n    \"roomId\": \"" + roomId + "\",\r\n    \"unitId\": \" " + unitId + "\",\r\n    \"firstNight\": \" " + req.body.checkin + "\",\r\n    \"status\": \"" + status + "\",\r\n    \"lastNight\": \" " + req.body.checkout + "\",\r\n    \"guestFirstName\": \" " + userName + " \",\r\n    \"guestName\": \"" + userSurname + "\",\r\n    \"guestEmail\": \"" + req.body.userEmail + "\",\r\n    \"guestMobile\": \"" + req.body.userPhone + "\",\r\n    \"guestCountry2\": \"" + req.body.userCountry + "\",\r\n    \"price\": \"" + req.body.totalPrice + "\",\r\n    \"deposit\": \"" + req.body.deposit + "\",\r\n    \"notifyUrl\": \"true\",\r\n    \"notifyGuest\": \"false\",\r\n    \"notifyHost\": \"false\",\r\n    \"assignBooking\": \"false\"\r\n                }",
                     url: url
                 };
-                console.log("STATUS : ", status);
                 request(options, function (err, result, body) {
                     console.log("DATA FOR BOOKING FROM BEDS24 :", body);
                     var urlGet = 'https://beds24.com/api/json/getBookings'
@@ -419,17 +476,17 @@ exports.updateBooking = function (req, res) {
                         url: urlGet
                     }
                     request(options, function (err, response, body) {
-                        Beds24.findOne({ th_id: th_id }, function (err, data) {
+                        Beds24.findOne({th_id: th_id}, function (err, data) {
                             data.data = JSON.parse(body)[0];
                             data.save(function (err, data) {
-                                res.json({ error: false, data: data });
+                                res.json({error: false, data: data});
                             })
                         });
                     });
                 });
             });
         } else {
-            res.json({ error: true, message: "ERROR ON SELECTING PROP" })
+            res.json({error: true, message: "ERROR ON SELECTING PROP"})
         }
     });
 
