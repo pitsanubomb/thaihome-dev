@@ -19,11 +19,11 @@ router.post('/charge', function(req, res){
 	  'currency': "thb",
 	  'card': req.body.omise_token,
 	  'capture': true,
-	  'return_uri':"http://localhost:3000/booking/"+ req.body.bookingId //@todo change the ip addr
+	  'return_uri':"http://191.101.12.128:3000/booking/"+ req.body.bookingId
 	}, function(err, resp) {
 	  if(err){
 	  	console.log("error : ", err, "RESP :", resp)
-		res.redirect("http://1localhost:3000/booking/"+ req.body.bookingId);
+		res.redirect("http://191.101.12.128:3000/booking/"+ req.body.bookingId + "/card_error" );
 	  }else{
 	  	console.log("OMISE : ", resp);
 	  	res.redirect(resp.authorize_uri);
