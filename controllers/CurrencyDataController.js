@@ -20,6 +20,12 @@ exports.getRates = function(){
 
             newCurrencyData.save(function(err, result){
                 if(!err){
+                    CurrencyData.find(function(err, data){
+                        for(var i = 0; i < data.length - 1; i++){
+                                data[i].remove();
+                        }
+                    });
+
                     console.log("Saving the rates...");
                 }else{
                     console.log("ERROR ON SAVING RATES!!");
