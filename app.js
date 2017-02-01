@@ -33,7 +33,7 @@ cron.schedule('* * * * *', function(){
 
 
 
-global.db = "mongodb://localhost:27017/thaihome";
+global.db = "mongodb://root:ndV5l1~lVb^UM!=4@localhost:27017/thaihome";
 
 mongoose.connect(global.db);
 
