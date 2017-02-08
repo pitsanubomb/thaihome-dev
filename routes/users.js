@@ -15,6 +15,10 @@ router.get('/getAdminsAndManagers', function(req, res){
 	UsersController.getAdminsAndManagers(req, res);
 });
 
+router.get('/getAdminsAndManagersAndTranslators', function(req, res){
+	UsersController.getAdminsAndManagersAndTranslators(req, res);
+});
+
 router.post('/getUsersByMultipleIds', function(req, res){
 	UsersController.getUsersByMultipleIds(req, res);
 });
