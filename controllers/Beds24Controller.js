@@ -103,6 +103,8 @@ exports.getBookings = function () {
                                                 if (!err) {
                                                     Property.findOne({unique: propData.rooms[bookings[index].unitId - 1]}, function (err, property) {
                                                         Price.findOne({property: property._id}, function (err, propPrice) {
+                                                            console.log(" RPOP PRICES : ", propPrice);
+
                                                             if (!err) {
                                                                 var checkin = Math.round(new Date(bookings[index].firstNight) / 1000);
                                                                 var checkout = Math.round(new Date(bookings[index].lastNight) / 1000 + 86400);
@@ -111,19 +113,19 @@ exports.getBookings = function () {
                                                                 var price = 0;
                                                                 var reservation = 0;
                                                                 if (days < 7) {
-                                                                    reservation = propPrice.PricereservationDay;
+                                                                    reservation = propPrice.reservationDay;
                                                                     price = propPrice.priceDay;
                                                                     deposit = propPrice.depositDay;
                                                                 } else if (days < 30) {
-                                                                    reservation = propPrice.PricereservationWeek;
+                                                                    reservation = propPrice.reservationWeek;
                                                                     price = propPrice.priceWeek;
                                                                     deposit = propPrice.depositWeek;
                                                                 } else if (days < 365) {
-                                                                    reservation = propPrice.PricereservationMonth;
+                                                                    reservation = propPrice.reservationMonth;
                                                                     price = propPrice.priceMonth;
                                                                     deposit = propPrice.depositMonth;
                                                                 } else {
-                                                                    reservation = propPrice.PricereservationYear;
+                                                                    reservation = propPrice.reservationYear;
                                                                     price = propPrice.priceYear;
                                                                     deposit = propPrice.depositYear;
                                                                 }
@@ -216,9 +218,6 @@ exports.getBookings = function () {
                                                                                     };
                                                                                     options.body = JSON.stringify(options.body);
                                                                                     request(options, function (err, response, body) {
-                                                                                        console.log("RESPONSE BOFY FROM API OF THAHIJOME: ", body);
-                                                                                        var currentBooking = JSON.parse(body);
-                                                                                        console.log("current booking id :", currentBooking.id);
                                                                                         var newBooking = new Beds24({
                                                                                             data: bookings[index],
                                                                                             th_id: currentBooking.id
@@ -243,7 +242,6 @@ exports.getBookings = function () {
                                                                             })
                                                                         }
                                                                         else {
-                                                                            console.log("CURRENT BOOKING : ", bookings[index]);
                                                                             var url = 'http://localhost:3000/api/booking';
                                                                             var options = {
                                                                                 method: 'put',
@@ -339,19 +337,19 @@ exports.getBookings = function () {
                                                 var price = 0;
                                                 var reservation = 0;
                                                 if (days < 7) {
-                                                    reservation = propPrice.PricereservationDay;
+                                                    reservation = propPrice.reservationDay;
                                                     price = propPrice.priceDay;
                                                     deposit = propPrice.depositDay;
                                                 } else if (days < 30) {
-                                                    reservation = propPrice.PricereservationWeek;
+                                                    reservation = propPrice.reservationWeek;
                                                     price = propPrice.priceWeek;
                                                     deposit = propPrice.depositWeek;
                                                 } else if (days < 365) {
-                                                    reservation = propPrice.PricereservationMonth;
+                                                    reservation = propPrice.reservationMonth;
                                                     price = propPrice.priceMonth;
                                                     deposit = propPrice.depositMonth;
                                                 } else {
-                                                    reservation = propPrice.PricereservationYear;
+                                                    reservation = propPrice.reservationYear;
                                                     price = propPrice.priceYear;
                                                     deposit = propPrice.depositYear;
                                                 }
@@ -443,9 +441,7 @@ exports.getBookings = function () {
                                                                     };
                                                                     options.body = JSON.stringify(options.body);
                                                                     request(options, function (err, response, body) {
-                                                                        console.log("RESPONSE BOFY FROM API OF THAHIJOME: ", body);
                                                                         var currentBooking = JSON.parse(body);
-                                                                        console.log("current booking id :", currentBooking.id);
                                                                         var newBooking = new Beds24({
                                                                             data: bookings[index],
                                                                             th_id: currentBooking.id
@@ -468,7 +464,7 @@ exports.getBookings = function () {
                                                             })
                                                         }
                                                         else {
-                                                            console.log("CURRENT BOOKING : ", bookings[index]);
+                                                            console.log("CURRENT prop priec : ", propPrice);
                                                             var url = 'http://localhost:3000/api/booking';
                                                             var options = {
                                                                 method: 'post',
@@ -516,7 +512,6 @@ exports.getBookings = function () {
                                                                 });
                                                                 newBooking.save(function (err, data) {
                                                                     if (!err) {
-                                                                        console.log("saved a new booking with bookingId:", bookings[index]);
                                                                         if ((index + 1) < bookings.length) {
                                                                             index++;
                                                                             compareBooking(index);
@@ -588,7 +583,6 @@ exports.setBookingWithId = function (id, th_id, resData) {
 exports.setBooking = function (req, res) {
     Beds24Props.findOne({rooms: req.body.prop}, function (err, result) {
         if (!err && result != null) {
-            console.log("RESULT FOR PROPES : ", result);
             var status = '';
             if (req.body.status == 6 || req.body.status == '6') {
                 status = 0;
@@ -616,7 +610,7 @@ exports.setBooking = function (req, res) {
             var url = 'https://beds24.com/api/json/setBooking';
             var options = {
                 method: 'post',
-                body: "{\r\n \"authentication\": {\r\n                        \"apiKey\": \"ThaiHomeTestingSync\",\r\n                        \"propKey\": \"" + propKey + "\"\r\n                    },\r\n    \"roomId\": \" " + roomId + " \",\r\n    \"unitId\": \" " + unitId + "\",\r\n    \"firstNight\": \" " + req.body.checkin + "\",\r\n    \"lastNight\": \" " + req.body.checkout + "\",\r\n    \"status\": \"" + status + "\",\r\n    \"guestFirstName\": \" " + userName + " \",\r\n    \"guestName\": \" " + userSurname + "\",\r\n    \"guestEmail\": \" " + req.body.userEmail + "\",\r\n    \"guestMobile\": \" " + req.body.userPhone + " \",\r\n    \"guestCountry2\": \" " + req.body.userCountry + "\",\r\n    \"price\": \" " + req.body.totalPrice + "\",\r\n    \"deposit\": \" " + req.body.deposit + "\",\r\n    \"notifyUrl\": \"true\",\r\n    \"notifyGuest\": \"false\",\r\n    \"notifyHost\": \"false\",\r\n    \"assignBooking\": \"false\"\r\n                }",
+                body: "{\r\n \"authentication\": {\r\n                        \"apiKey\": \"ThaiHomeTestingSync\",\r\n                        \"propKey\": \"" + propKey + "\"\r\n                    },\r\n    \"roomId\": \"" + roomId + " \",\r\n    \"unitId\": \"" + unitId + "\",\r\n    \"firstNight\": \"" + req.body.checkin + "\",\r\n    \"lastNight\": \"" + req.body.checkout + "\",\r\n    \"status\": \"" + status + "\",\r\n    \"guestFirstName\": \"" + userName + " \",\r\n    \"guestName\": \"" + userSurname + "\",\r\n    \"guestEmail\": \"" + req.body.userEmail + "\",\r\n    \"guestMobile\": \"" + req.body.userPhone + " \",\r\n    \"guestCountry2\": \"" + req.body.userCountry + "\",\r\n    \"price\": \"" + req.body.totalPrice + "\",\r\n    \"deposit\": \"" + req.body.deposit + "\",\r\n    \"notifyUrl\": \"true\",\r\n    \"notifyGuest\": \"false\",\r\n    \"notifyHost\": \"false\",\r\n    \"assignBooking\": \"false\",\r\n  \"guestArrivalTime\": \"" + req.body.arrival + "\"\r\n                }",
                 url: url
             };
             request(options, function (err, result, body) {
@@ -652,6 +646,7 @@ exports.setBooking = function (req, res) {
 }
 
 exports.updateBooking = function (req, res) {
+    console.log('body : ', req.body);
     Beds24Props.findOne({rooms: req.body.prop}, function (err, result) {
         if (!err && result != null) {
             var roomUnique = req.body.prop;
@@ -665,47 +660,53 @@ exports.updateBooking = function (req, res) {
             var url = 'https://beds24.com/api/json/setBooking';
             var th_id = req.body.th_id;
             Beds24.findOne({th_id: th_id}, function (err, data) {
-                var status = '';
-                if (req.body.status == 6 || req.body.status == '6') {
-                    status = 0;
-                }
-                else if (req.body.status == 0 || req.body.status == '0') {
-                    status = 2;
-                }
-                else if (req.body.status == 1 || req.body.status == '1') {
-                    status = 2;
-                }
-                else if (req.body.status == 2 || req.body.status == '2') {
-                    status = 1;
-                } else if (req.body.status == 3 || req.body.status == '3') {
-                    status = 1;
-                } else {
-                    status = 3;
-                }
-                var id = data.data.bookId;
-                var url = 'https://beds24.com/api/json/setBooking'
-                var options = {
-                    method: 'post',
-                    body: "{\r\n \"authentication\": {\r\n                        \"apiKey\": \"ThaiHomeTestingSync\",\r\n                        \"propKey\": \"" + propKey + "\"\r\n                    },\r\n    \"bookId\": \"" + id + "\",\r\n    \"roomId\": \"" + roomId + "\",\r\n    \"unitId\": \" " + unitId + "\",\r\n    \"firstNight\": \" " + req.body.checkin + "\",\r\n    \"status\": \"" + status + "\",\r\n    \"lastNight\": \" " + req.body.checkout + "\",\r\n    \"guestFirstName\": \" " + userName + " \",\r\n    \"guestName\": \"" + userSurname + "\",\r\n    \"guestEmail\": \"" + req.body.userEmail + "\",\r\n    \"guestMobile\": \"" + req.body.userPhone + "\",\r\n    \"guestCountry2\": \"" + req.body.userCountry + "\",\r\n    \"price\": \"" + req.body.totalPrice + "\",\r\n    \"deposit\": \"" + req.body.deposit + "\",\r\n    \"notifyUrl\": \"true\",\r\n    \"notifyGuest\": \"false\",\r\n    \"notifyHost\": \"false\",\r\n    \"assignBooking\": \"false\"\r\n                }",
-                    url: url
-                };
-                request(options, function (err, result, body) {
-                    console.log("DATA FOR BOOKING FROM BEDS24 :", body);
-                    var urlGet = 'https://beds24.com/api/json/getBookings'
+                if(!err && data != null) {
+
+
+                    var status = '';
+                    if (req.body.status == 6 || req.body.status == '6') {
+                        status = 0;
+                    }
+                    else if (req.body.status == 0 || req.body.status == '0') {
+                        status = 2;
+                    }
+                    else if (req.body.status == 1 || req.body.status == '1') {
+                        status = 2;
+                    }
+                    else if (req.body.status == 2 || req.body.status == '2') {
+                        status = 1;
+                    } else if (req.body.status == 3 || req.body.status == '3') {
+                        status = 1;
+                    } else {
+                        status = 3;
+                    }
+                    var id = data.data.bookId;
+                    var url = 'https://beds24.com/api/json/setBooking'
                     var options = {
                         method: 'post',
-                        body: "{\r\n                    \"authentication\": {\r\n                        \"apiKey\": \"ThaiHomeTestingSync\",\r\n                        \"propKey\": \"" + propKey + "\"\r\n                    },\r\n                    \"bookId\": \" " + id + " \"\r\n                   \r\n                }",
-                        url: urlGet
-                    }
-                    request(options, function (err, response, body) {
-                        Beds24.findOne({th_id: th_id}, function (err, data) {
-                            data.data = JSON.parse(body)[0];
-                            data.save(function (err, data) {
-                                res.json({error: false, data: data});
-                            })
+                        body: "{\r\n \"authentication\": {\r\n                        \"apiKey\": \"ThaiHomeTestingSync\",\r\n                        \"propKey\": \"" + propKey + "\"\r\n                    },\r\n    \"bookId\": \"" + id + "\",\r\n    \"roomId\": \"" + roomId + "\",\r\n    \"unitId\": \"" + unitId + "\",\r\n    \"firstNight\": \"" + req.body.checkin + "\",\r\n    \"status\": \"" + status + "\",\r\n    \"lastNight\": \"" + req.body.checkout + "\",\r\n    \"guestFirstName\": \"" + userName + " \",\r\n    \"guestName\": \"" + userSurname + "\",\r\n    \"guestEmail\": \"" + req.body.userEmail + "\",\r\n    \"guestMobile\": \"" + req.body.userPhone + "\",\r\n    \"guestCountry2\": \"" + req.body.userCountry + "\",\r\n    \"price\": \"" + req.body.totalPrice + "\",\r\n    \"deposit\": \"" + req.body.deposit + "\",\r\n    \"notifyUrl\": \"true\",\r\n    \"notifyGuest\": \"false\",\r\n    \"notifyHost\": \"false\",\r\n    \"assignBooking\": \"false\"\r\n                }",
+                        url: url
+                    };
+                    request(options, function (err, result, body) {
+                        console.log("DATA FOR BOOKING FROM BEDS24 :", body);
+                        var urlGet = 'https://beds24.com/api/json/getBookings'
+                        var options = {
+                            method: 'post',
+                            body: "{\r\n                    \"authentication\": {\r\n                        \"apiKey\": \"ThaiHomeTestingSync\",\r\n                        \"propKey\": \"" + propKey + "\"\r\n                    },\r\n                    \"bookId\": \" " + id + " \"\r\n                   \r\n                }",
+                            url: urlGet
+                        }
+                        request(options, function (err, response, body) {
+                            Beds24.findOne({th_id: th_id}, function (err, data) {
+                                data.data = JSON.parse(body)[0];
+                                data.save(function (err, data) {
+                                    res.json({error: false, data: data});
+                                })
+                            });
                         });
                     });
-                });
+                }else{
+                    res.json({error:false,message:"booking not Updated"});
+                }
             });
         } else {
             res.json({error: true, message: "ERROR ON SELECTING PROP"})

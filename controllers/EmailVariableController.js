@@ -58,11 +58,15 @@ exports.getVariables = function (req, res) {
                                                                 if(booking.discountPercentage){
                                                                     totalPriceBooking = totalPriceBooking - (totalPriceBooking / 100 * booking.discountPercentage)
                                                                 }
-                                                                function bothPrices(price){
-                                                                    if(currency.currency != 'THB'){
-                                                                        return String( "฿  " + formatMoney(price ,0,'.',',') + ' (' + currency.symbol + ' ' + formatMoney(Math.round(price * secondPriceRate),0,'.',',') + ') ' );
+                                                                function bothPrices(price, format){
+                                                                    if(currency.currency == 'THB'  || format == 'left'){
+                                                                        return String( "฿  " + price);
                                                                     }else{
-                                                                        return String( "฿  " + formatMoney(price ,0,'.',','));
+                                                                        if(format == 'both'){
+                                                                            return String( "฿  " + price + ' (' + currency.symbol + ' ' + Math.round(price * secondPriceRate) + ') ' );
+                                                                        }else{
+                                                                            return String( currency.symbol + ' ' + Math.round(price * secondPriceRate));
+                                                                        }
                                                                     }
                                                                 }
 
