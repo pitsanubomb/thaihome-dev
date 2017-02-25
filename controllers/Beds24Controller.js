@@ -119,15 +119,15 @@ exports.getBookings = function () {
                                                                     deposit = propPrice.depositDay;
                                                                 } else if (days < 30) {
                                                                     reservation = propPrice.reservationWeek;
-                                                                    price = propPrice.priceWeek;
+                                                                    price = Math.round(propPrice.priceWeek / 7);
                                                                     deposit = propPrice.depositWeek;
                                                                 } else if (days < 365) {
                                                                     reservation = propPrice.reservationMonth;
-                                                                    price = propPrice.priceMonth;
+                                                                    price = Math.round(propPrice.priceMonth / 30);
                                                                     deposit = propPrice.depositMonth;
                                                                 } else {
                                                                     reservation = propPrice.reservationYear;
-                                                                    price = propPrice.priceYear;
+                                                                    price = Math.round(propPrice.priceYear / 365);
                                                                     deposit = propPrice.depositYear;
                                                                 }
                                                                 var status = 0;
@@ -343,15 +343,15 @@ exports.getBookings = function () {
                                                         deposit = propPrice.depositDay;
                                                     } else if (days < 30) {
                                                         reservation = propPrice.reservationWeek;
-                                                        price = propPrice.priceWeek;
+                                                        price = Math.round(propPrice.priceWeek / 7);
                                                         deposit = propPrice.depositWeek;
                                                     } else if (days < 365) {
                                                         reservation = propPrice.reservationMonth;
-                                                        price = propPrice.priceMonth;
+                                                        price = Math.round(propPrice.priceMonth / 30 );
                                                         deposit = propPrice.depositMonth;
                                                     } else {
                                                         reservation = propPrice.reservationYear;
-                                                        price = propPrice.priceYear;
+                                                        price = Math.round(propPrice.priceYear / 365);
                                                         deposit = propPrice.depositYear;
                                                     }
                                                     var status = 0;
@@ -606,8 +606,9 @@ exports.setBooking = function (req, res) {
             var roomUnique = req.body.prop;
             var propKey = result.key;
             var user = req.body.user.split(' ');
-            var userSurname = user[1];
             var userName = user[0];
+            req.body.user.replace( user[0]  + " ", '');
+            var userSurname = req.body.user;
             var roomId = result.roomId;
             var unitId = result.rooms.indexOf(roomUnique) + 1;
             var url = 'https://beds24.com/api/json/setBooking';
@@ -655,17 +656,15 @@ exports.updateBooking = function (req, res) {
             var roomUnique = req.body.prop;
             var propKey = result.key;
             var user = req.body.user.split(' ');
-            var userSurname = user[1];
             var userName = user[0];
+            req.body.user.replace( user[0]  + " ", '');
+            var userSurname = req.body.user;
             var roomId = result.roomId;
-
             var unitId = result.rooms.indexOf(roomUnique) + 1;
             var url = 'https://beds24.com/api/json/setBooking';
             var th_id = req.body.th_id;
             Beds24.findOne({th_id: th_id}, function (err, data) {
                 if(!err && data != null) {
-
-
                     var status = '';
                     if (req.body.status == 6 || req.body.status == '6') {
                         status = 0;
@@ -687,7 +686,7 @@ exports.updateBooking = function (req, res) {
                     var url = 'https://beds24.com/api/json/setBooking'
                     var options = {
                         method: 'post',
-                        body: "{\r\n \"authentication\": {\r\n                        \"apiKey\": \"ThaiHomeTestingSync\",\r\n                        \"propKey\": \"" + propKey + "\"\r\n                    },\r\n    \"bookId\": \"" + id + "\",\r\n    \"roomId\": \"" + roomId + "\",\r\n    \"unitId\": \"" + unitId + "\",\r\n    \"firstNight\": \"" + req.body.checkin + "\",\r\n    \"status\": \"" + status + "\",\r\n    \"lastNight\": \"" + req.body.checkout + "\",\r\n    \"guestFirstName\": \"" + userName + " \",\r\n    \"guestName\": \"" + userSurname + "\",\r\n    \"guestEmail\": \"" + req.body.userEmail + "\",\r\n    \"guestMobile\": \"" + req.body.userPhone + "\",\r\n    \"guestCountry\": \"" + req.body.userCountry + "\",\r\n    \"price\": \"" + req.body.totalPrice + "\",\r\n    \"deposit\": \"" + req.body.deposit + "\",\r\n    \"notifyUrl\": \"true\",\r\n    \"notifyGuest\": \"false\",\r\n    \"notifyHost\": \"false\",\r\n    \"assignBooking\": \"false\"\r\n                }",
+                        body: "{\r\n \"authentication\": {\r\n                        \"apiKey\": \"ThaiHomeTestingSync\",\r\n                        \"propKey\": \"" + propKey + "\"\r\n                    },\r\n    \"bookId\": \"" + id + "\",\r\n    \"roomId\": \"" + roomId + "\",\r\n    \"unitId\": \"" + unitId + "\",\r\n    \"firstNight\": \"" + req.body.checkin + "\",\r\n    \"status\": \"" + status + "\",\r\n    \"lastNight\": \"" + req.body.checkout + "\",\r\n    \"guestFirstName\": \"" + userName + " \",\r\n    \"guestName\": \"" + userSurname + "\",\r\n    \"guestEmail\": \"" + req.body.userEmail + "\",\r\n    \"guestMobile\": \"" + req.body.userPhone + "\",\r\n    \"guestCountry\": \"" + req.body.userCountry + "\",\r\n    \"price\": \"" + req.body.totalPrice + "\",\r\n    \"deposit\": \"" + req.body.deposit + "\",\r\n    \"notifyUrl\": \"true\",\r\n    \"notifyGuest\": \"false\",\r\n    \"notifyHost\": \"false\",\r\n    \"assignBooking\": \"false\"\r\n, \"guestArrivalTime\": \"" + req.body.arrival + "\"\r\n                  }",
                         url: url
                     };
                     request(options, function (err, result, body) {
