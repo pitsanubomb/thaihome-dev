@@ -605,16 +605,20 @@ exports.setBooking = function (req, res) {
             }
             var roomUnique = req.body.prop;
             var propKey = result.key;
-            var user = req.body.user.split(' ');
-            var userName = user[0];
-            req.body.user.replace( user[0]  + " ", '');
-            var userSurname = req.body.user;
+            var user = req.body.user;
+            var userName = user.split(' ')[0];
+            var userSurname = req.body.user.replace( userName  + " ", '');
             var roomId = result.roomId;
+            var arrival = ''
+            if(typeof req.body.arrival != 'undefined'){
+                arrival = req.body.arrival;
+            }
+
             var unitId = result.rooms.indexOf(roomUnique) + 1;
             var url = 'https://beds24.com/api/json/setBooking';
             var options = {
                 method: 'post',
-                body: "{\r\n \"authentication\": {\r\n                        \"apiKey\": \"ThaiHomeTestingSync\",\r\n                        \"propKey\": \"" + propKey + "\"\r\n                    },\r\n    \"roomId\": \"" + roomId + " \",\r\n    \"unitId\": \"" + unitId + "\",\r\n    \"firstNight\": \"" + req.body.checkin + "\",\r\n    \"lastNight\": \"" + req.body.checkout + "\",\r\n    \"status\": \"" + status + "\",\r\n    \"guestFirstName\": \"" + userName + " \",\r\n    \"guestName\": \"" + userSurname + "\",\r\n    \"guestEmail\": \"" + req.body.userEmail + "\",\r\n    \"guestMobile\": \"" + req.body.userPhone + " \",\r\n    \"guestCountry\": \"" + req.body.userCountry + "\",\r\n    \"price\": \"" + req.body.totalPrice + "\",\r\n    \"deposit\": \"" + req.body.deposit + "\",\r\n    \"notifyUrl\": \"true\",\r\n    \"notifyGuest\": \"false\",\r\n    \"notifyHost\": \"false\",\r\n    \"assignBooking\": \"false\",\r\n  \"guestArrivalTime\": \"" + req.body.arrival + "\"\r\n                }",
+                body: "{\r\n \"authentication\": {\r\n                        \"apiKey\": \"ThaiHomeTestingSync\",\r\n                        \"propKey\": \"" + propKey + "\"\r\n                    },\r\n    \"roomId\": \"" + roomId + " \",\r\n    \"unitId\": \"" + unitId + "\",\r\n    \"firstNight\": \"" + req.body.checkin + "\",\r\n    \"lastNight\": \"" + req.body.checkout + "\",\r\n    \"status\": \"" + status + "\",\r\n    \"guestFirstName\": \"" + userName + " \",\r\n    \"guestName\": \"" + userSurname + "\",\r\n    \"guestEmail\": \"" + req.body.userEmail + "\",\r\n    \"guestMobile\": \"" + req.body.userPhone + " \",\r\n    \"guestCountry\": \"" + req.body.userCountry + "\",\r\n    \"price\": \"" + req.body.totalPrice + "\",\r\n    \"deposit\": \"" + req.body.deposit + "\",\r\n    \"notifyUrl\": \"true\",\r\n    \"notifyGuest\": \"false\",\r\n    \"notifyHost\": \"false\",\r\n    \"assignBooking\": \"false\",\r\n  \"guestArrivalTime\": \"" + arrival + "\"\r\n                }",
                 url: url
             };
 
@@ -655,11 +659,14 @@ exports.updateBooking = function (req, res) {
         if (!err && result != null) {
             var roomUnique = req.body.prop;
             var propKey = result.key;
-            var user = req.body.user.split(' ');
-            var userName = user[0];
-            req.body.user.replace( user[0]  + " ", '');
-            var userSurname = req.body.user;
+            var user = req.body.user;
+            var userName = user.split(' ')[0];
+            var userSurname = req.body.user.replace(  userName + " ", '');
             var roomId = result.roomId;
+            var arrival = '';
+            if(typeof req.body.arrival != 'undefined'){
+                arrival = req.body.arrival;
+            }
             var unitId = result.rooms.indexOf(roomUnique) + 1;
             var url = 'https://beds24.com/api/json/setBooking';
             var th_id = req.body.th_id;
@@ -686,7 +693,7 @@ exports.updateBooking = function (req, res) {
                     var url = 'https://beds24.com/api/json/setBooking'
                     var options = {
                         method: 'post',
-                        body: "{\r\n \"authentication\": {\r\n                        \"apiKey\": \"ThaiHomeTestingSync\",\r\n                        \"propKey\": \"" + propKey + "\"\r\n                    },\r\n    \"bookId\": \"" + id + "\",\r\n    \"roomId\": \"" + roomId + "\",\r\n    \"unitId\": \"" + unitId + "\",\r\n    \"firstNight\": \"" + req.body.checkin + "\",\r\n    \"status\": \"" + status + "\",\r\n    \"lastNight\": \"" + req.body.checkout + "\",\r\n    \"guestFirstName\": \"" + userName + " \",\r\n    \"guestName\": \"" + userSurname + "\",\r\n    \"guestEmail\": \"" + req.body.userEmail + "\",\r\n    \"guestMobile\": \"" + req.body.userPhone + "\",\r\n    \"guestCountry\": \"" + req.body.userCountry + "\",\r\n    \"price\": \"" + req.body.totalPrice + "\",\r\n    \"deposit\": \"" + req.body.deposit + "\",\r\n    \"notifyUrl\": \"true\",\r\n    \"notifyGuest\": \"false\",\r\n    \"notifyHost\": \"false\",\r\n    \"assignBooking\": \"false\"\r\n, \"guestArrivalTime\": \"" + req.body.arrival + "\"\r\n                  }",
+                        body: "{\r\n \"authentication\": {\r\n                        \"apiKey\": \"ThaiHomeTestingSync\",\r\n                        \"propKey\": \"" + propKey + "\"\r\n                    },\r\n    \"bookId\": \"" + id + "\",\r\n    \"roomId\": \"" + roomId + "\",\r\n    \"unitId\": \"" + unitId + "\",\r\n    \"firstNight\": \"" + req.body.checkin + "\",\r\n    \"status\": \"" + status + "\",\r\n    \"lastNight\": \"" + req.body.checkout + "\",\r\n    \"guestFirstName\": \"" + userName + " \",\r\n    \"guestName\": \"" + userSurname + "\",\r\n    \"guestEmail\": \"" + req.body.userEmail + "\",\r\n    \"guestMobile\": \"" + req.body.userPhone + "\",\r\n    \"guestCountry\": \"" + req.body.userCountry + "\",\r\n    \"price\": \"" + req.body.totalPrice + "\",\r\n    \"deposit\": \"" + req.body.deposit + "\",\r\n    \"notifyUrl\": \"true\",\r\n    \"notifyGuest\": \"false\",\r\n    \"notifyHost\": \"false\",\r\n    \"assignBooking\": \"false\"\r\n, \"guestArrivalTime\": \"" + arrival + "\"\r\n                  }",
                         url: url
                     };
                     request(options, function (err, result, body) {

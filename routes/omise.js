@@ -15,23 +15,23 @@ router.post('/charge', function(req, res){
 
 	console.log(" AMOUNT : ", req.body.amount);
 
-	omise.charges.create({
-	  'description': 'Charge for order ID: ' + req.body.bookingId,
-	  'amount': Number(req.body.amount) * 100,
-	  'currency': "thb",
-	  'card': req.body.omise_token,
-	  'capture': true,
-	  'return_uri':"http://191.101.12.128:3000/booking/"+ req.body.bookingId
-	}, function(err, resp) {
-	  if(err){
-	  	//console.log("error : ", err, "RESP :", resp)
-		res.redirect("http://191.101.12.128:3000/booking/"+ req.body.bookingId + "/card_error" );
-	  }else{
-	  	console.log("OMISE : ", resp);
-	  	res.redirect(resp.authorize_uri);
-	  }
+    omise.charges.create({
+        'description': 'Charge for order ID: ' + req.body.bookingId,
+        'amount': Number(req.body.amount) * 100,
+        'currency': "thb",
+        'card': req.body.omise_token,
+        'capture': true,
+        'return_uri':"http://191.101.12.128:3000:3000/booking/"+ req.body.bookingId
+    }, function(err, resp) {
+        if(err){
+            console.log("error : ", err, "RESP :", resp);
+            res.redirect("http://191.101.12.128:3000:3000/booking/"+ req.body.bookingId + "/card_error" );
+        }else{
+            console.log("OMISE : ", resp);
+            res.redirect(resp.authorize_uri);
+        }
 
-	});
+    });
 
 
 });
