@@ -85,7 +85,7 @@ exports.getBookings = function () {
                                     current[0].data.guestFirstName == bookings[index].guestFirstName &&
                                     current[0].data.guestName == bookings[index].guestName &&
                                     current[0].data.guestEmail == bookings[index].guestEmail &&
-                                    current[0].data.guestPhone == bookings[index].guestPhone &&
+                                    current[0].data.guestMobile == bookings[index].guestMobile &&
                                     current[0].data.guestCountry == bookings[index].guestCountry &&
                                     current[0].data.price == bookings[index].price &&
                                     current[0].data.deposit == bookings[index].deposit &&
@@ -243,64 +243,85 @@ exports.getBookings = function () {
                                                                             })
                                                                         }
                                                                         else {
-                                                                            var url = 'http://localhost:3000/api/booking';
-                                                                            var options = {
-                                                                                method: 'put',
-                                                                                body: {
-                                                                                    "id":current[0].th_id,
-                                                                                    "property": property._id,
-                                                                                    "user": user._id,
-                                                                                    "agentCommission": "",
-                                                                                    "discountPercentage": 0,
-                                                                                    "checkin": checkin,
-                                                                                    "checkout": checkout,
-                                                                                    "status": status,//
-                                                                                    "currency": "588a25ac3dd9c18b67717a5f",
-                                                                                    "paymentType": 5,
-                                                                                    "expires": Math.round(new Date() / 1000 + 5 * 86400),
-                                                                                    "priceDay": price,
-                                                                                    "nights": days,
-                                                                                    "priceReservation": reservation,
-                                                                                    "priceSecurity": deposit,
-                                                                                    "cleanprice": property.cleanprice,
-                                                                                    "cleanfinalprice": property.cleanfinalprice,
-                                                                                    "priceExtra": [],
-                                                                                    "conditionsTenant": "Electric and Water, you have to pay for what you use. Wifi and Cable TV included and paid by us. ",
-                                                                                    "created": Math.round(new Date() / 1000),
-                                                                                    "rate": 1,
-                                                                                    "pricePaid": 0,
-                                                                                    "emails": [],
-                                                                                    "rentpayday": 0,
-                                                                                    "nextpayment": 0,
-                                                                                    "source": "B",
-                                                                                    "discountAmount": "",
-                                                                                    "longTermDay": 1,
-                                                                                    "longTermAmount": null,
-                                                                                    "checked": false,
-                                                                                    "paymentconfirmed": false,
-                                                                                    "arrival":bookings[index].guestArrivalTime
-                                                                                },
-                                                                                url: url
-                                                                            };
-                                                                            options.body = JSON.stringify(options.body);
-                                                                            request(options, function (err, response, body) {
-                                                                                var currentBooking = JSON.parse(body);
-                                                                                var newBooking = new Beds24({
-                                                                                    data: bookings[index],
-                                                                                    th_id: currentBooking.id
-                                                                                });
-                                                                                newBooking.save(function (err, data) {
-                                                                                    if (!err) {
-                                                                                        console.log("updated  booking with bookingId:", currentBooking);
-                                                                                        if ((index + 1) < bookings.length) {
-                                                                                            index++;
-                                                                                            compareBooking(index);
+
+                                                                            /*
+                                                                             current[0].data.firstNight == bookings[index].firstNight &&
+                                                                             current[0].data.lastNight == bookings[index].lastNight &&
+                                                                             current[0].data.guestFirstName ==  &&
+                                                                             current[0].data.guestName == bookings[index].guestName &&
+                                                                             current[0].data.guestEmail == bookings[index].guestEmail &&
+                                                                             current[0].data.guestPhone == bookings[index]. &&
+                                                                             current[0].data.guestCountry == bookings[index].guestCountry &&
+                                                                            * */
+
+                                                                            user.name = bookings[index].guestFirstName + " " + bookings[index].guestName;
+                                                                            user.phone = bookings[index].guestMobile;
+                                                                            user.country = bookings[index].guestCountry;
+
+                                                                            user.save(function(err, updatedUser){
+                                                                                console.log('UPDATED USER : ', updatedUser);
+                                                                                var url = 'http://localhost:3000/api/booking';
+                                                                                var options = {
+                                                                                    method: 'put',
+                                                                                    body: {
+                                                                                        "id":current[0].th_id,
+                                                                                        "property": property._id,
+                                                                                        "user": user._id,
+                                                                                        "agentCommission": "",
+                                                                                        "discountPercentage": 0,
+                                                                                        "checkin": checkin,
+                                                                                        "checkout": checkout,
+                                                                                        "status": status,//
+                                                                                        "currency": "588a25ac3dd9c18b67717a5f",
+                                                                                        "paymentType": 5,
+                                                                                        "expires": Math.round(new Date() / 1000 + 5 * 86400),
+                                                                                        "priceDay": price,
+                                                                                        "nights": days,
+                                                                                        "priceReservation": reservation,
+                                                                                        "priceSecurity": deposit,
+                                                                                        "cleanprice": property.cleanprice,
+                                                                                        "cleanfinalprice": property.cleanfinalprice,
+                                                                                        "priceExtra": [],
+                                                                                        "conditionsTenant": "Electric and Water, you have to pay for what you use. Wifi and Cable TV included and paid by us. ",
+                                                                                        "created": Math.round(new Date() / 1000),
+                                                                                        "rate": 1,
+                                                                                        "pricePaid": 0,
+                                                                                        "emails": [],
+                                                                                        "rentpayday": 0,
+                                                                                        "nextpayment": 0,
+                                                                                        "source": "B",
+                                                                                        "discountAmount": "",
+                                                                                        "longTermDay": 1,
+                                                                                        "longTermAmount": null,
+                                                                                        "checked": false,
+                                                                                        "paymentconfirmed": false,
+                                                                                        "arrival":bookings[index].guestArrivalTime
+                                                                                    },
+                                                                                    url: url
+                                                                                };
+                                                                                options.body = JSON.stringify(options.body);
+                                                                                request(options, function (err, response, body) {
+                                                                                    var currentBooking = JSON.parse(body);
+                                                                                    var newBooking = new Beds24({
+                                                                                        data: bookings[index],
+                                                                                        th_id: currentBooking.id
+                                                                                    });
+                                                                                    newBooking.save(function (err, data) {
+                                                                                        if (!err) {
+                                                                                            console.log("updated  booking with bookingId:", currentBooking);
+                                                                                            if ((index + 1) < bookings.length) {
+                                                                                                index++;
+                                                                                                compareBooking(index);
+                                                                                            }
+                                                                                        }else{
+                                                                                            console.log("ERROR ON UPDATING BOOKING")
                                                                                         }
-                                                                                    }else{
-                                                                                        console.log("ERROR ON UPDATING BOOKING")
-                                                                                    }
-                                                                                });
-                                                                            })
+                                                                                    });
+                                                                                })
+                                                                            });
+
+
+
                                                                         }
                                                                     } else {
                                                                         console.log('ERROR ON SELECTING USER WITH EMAIL.');

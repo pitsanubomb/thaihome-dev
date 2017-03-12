@@ -78,7 +78,7 @@ exports.getVariables = function (req, res) {
                                                                 _.each(booking.priceExtra, function (extra) {
                                                                     PriceExtra = parseFloat(PriceExtra) + parseFloat(extra.price);
                                                                     PriceExtraHTML += '<tr>';
-                                                                    PriceExtraHTML += '<td style="padding: 5px 0 0 0;border-bottom: 1px solid #ddd;width: 90px;font-family: arial,sans-serif;font-size:14px;">' + extra.name + '</td><td style="padding: 5px 0 0 0;border-top: 1px solid #ddd;width: 90px;font-family: arial,sans-serif;text-align:right;"><b style="font-size:14px">' + bothPrices((extra.price * booking.rate).toFixed(0), 'right' ) + '</b></td>';
+                                                                    PriceExtraHTML += '<td style="padding: 5px 0 0 0;border-bottom: 1px solid #ddd;width: 90px;font-family: arial,sans-serif;font-size:14px;">' + extra.name + '</td><td style="padding: 5px 0 0 0;border-bottom: 1px solid #ddd;width: 90px;font-family: arial,sans-serif;text-align:right;"><b style="font-size:14px">' + bothPrices((extra.price * booking.rate).toFixed(0), 'right' ) + '</b></td>';
                                                                     PriceExtraHTML += '</tr>';
                                                                 });
 
