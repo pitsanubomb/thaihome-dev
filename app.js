@@ -19,6 +19,7 @@ var currency = require('./routes/currency');
 var CurrencyDataController = require('./controllers/CurrencyDataController');
 var booking = require('./routes/booking');
 var omise = require('./routes/omise');
+var news = require('./routes/news');
 
 var app = express();
 
@@ -66,6 +67,7 @@ app.use('/invoice', invoice);
 app.use('/currency', currency);
 app.use('/booking', booking);
 app.use('/omise', omise);
+app.use('/news', news);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
