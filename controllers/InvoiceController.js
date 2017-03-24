@@ -36,6 +36,7 @@ exports.getInvoicesBayDateRange = function (req, res) {
                                 return obj._id == invoices[q].bookingId;
                             });
                             inv.push({
+                                _id: invoices[q]._id,
                                 invoiceNumber: invoices[q].invoiceNumber,
                                 bookingId: invoices[q].bookingId,
                                 propertyId: invoices[q].propertyId,

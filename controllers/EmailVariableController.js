@@ -40,7 +40,9 @@ exports.getVariables = function (req, res) {
                                                         if (!err) {
                                                             CurrenctData.find(function (err, Cdata) {
                                                                 var totalPriceBooking = 0;
-
+                                                                if(booking.discountAmount > 0){
+                                                                    booking.discountAmount = booking.discountAmount * -1
+                                                                }
                                                                 var formatMoney = function (n, c, d, t) {
                                                                     var c = isNaN(c = Math.abs(c)) ? 2 : c,
                                                                         d = d == undefined ? "." : d,
