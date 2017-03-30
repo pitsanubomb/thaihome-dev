@@ -19,6 +19,9 @@ router.post('/updateBooking', function(req, res){
 router.post('/getBookingsForProperty', function(req, res){
     BookingsController.getBookingsForProperty(req, res);
 });
+router.get('/getCheckinCheckount', function(req, res){
+    BookingsController.getCheckinCheckount(req, res);
+});
 
 
 
