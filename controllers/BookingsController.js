@@ -21,22 +21,22 @@ exports.getCheckinCheckount = function (req, res) {
         checkoutTomorrow: ''
     };
     Bookings.aggregate(
-        {$match: {checkin: {$gte: Math.round(new Date() / 1000) - 86400, $lte: Math.round(new Date() / 1000) + 86400}}}
+        {$match: {$and: [{checkin: {$gte: Math.round(new Date() / 1000) - 86400, $lte: Math.round(new Date() / 1000) + 86400}},{status:{$lt:5}}]}}
         , function(err, checkinTd){
             if(!err){
                 bookings.checkinToday = checkinTd;
                 Bookings.aggregate(
-                    {$match: {checkin: {$gte: Math.round(new Date() / 1000) + 86400, $lte: Math.round(new Date() / 1000) + 86400 * 2}}}
+                    {$match: { $and: [ {checkin: {$gte: Math.round(new Date() / 1000) + 86400, $lte: Math.round(new Date() / 1000) + 86400 * 2}}, {status:{$lt:5}}] }}
                     , function(err, checkinTm){
                         if(!err){
                             bookings.checkinTomorrow = checkinTm;
                             Bookings.aggregate(
-                                {$match: {checkout: {$gte: Math.round(new Date() / 1000)  - 86400, $lte: Math.round(new Date() / 1000) + 86400}}}
+                                {$match: {$and: [{checkout: {$gte: Math.round(new Date() / 1000) - 86400, $lte: Math.round(new Date() / 1000) + 86400}},{status:{$lt:5}}]}}
                                 , function(err, checkoutTd){
                                     if(!err){
                                         bookings.checkoutToday = checkoutTd;
                                         Bookings.aggregate(
-                                            {$match: {checkout: {$gte: Math.round(new Date() / 1000) + 86400, $lte: Math.round(new Date() / 1000) + 86400 * 2}}}
+                                            {$match: { $and: [ {checkout: {$gte: Math.round(new Date() / 1000) + 86400, $lte: Math.round(new Date() / 1000) + 86400 * 2}}, {status:{$lt:5}}] }}
                                             , function(err, checkoutTm){
                                                 if(!err){
                                                     bookings.checkoutTomorrow = checkoutTm;
